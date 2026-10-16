@@ -314,7 +314,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
         run: |
-          shopt -s nullglob
+          shopt -s nullglob globstar
           assets=(dist/**/*.{dmg,deb,exe})
           if [ ${#assets[@]} -eq 0 ]; then
             echo "No release assets found."
