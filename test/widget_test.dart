@@ -22,16 +22,80 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets(
-    'configured visual lines control page size and preserve context',
-    (tester) async {
+  testWidgets('configured visual lines control full page navigation', (
+    tester,
+  ) async {
+    final controller = ReaderController(
+      initialContent: List.generate(
+        20,
+        (index) => 'LINE-${index + 1}',
+      ).join('\n'),
+      preferencesStore: MemoryReaderPreferencesStore(
+        initialSettings: ReaderSettings.defaults.copyWith(oneLineMode: true),
+      ),
+      windowController: _FakePlatformWindowController(),
+      fileBookmarkService: _FakeReaderFileBookmarkService(),
+      importService: _FakeReaderImportService(),
+      libraryStorage: MemoryReaderLibraryStorage(),
+    );
+    await controller.initialize();
+    await tester.pumpWidget(
+      CheatReaderApp(
+        controller: controller,
+        windowController: _FakePlatformWindowController(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    controller.setMultiLineVisibleLines(3);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byType(Text).first).data,
+      'LINE-1\nLINE-2\nLINE-3',
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byType(Text).first).data,
+      'LINE-4\nLINE-5\nLINE-6',
+    );
+    controller.setMultiLineVisibleLines(7);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byType(Text).first).data,
+      'LINE-4\nLINE-5\nLINE-6\nLINE-7\nLINE-8\nLINE-9\nLINE-10',
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+    await tester.pumpAndSettle();
+    expect(controller.currentLineIndex, 10);
+    await tester.sendKeyEvent(LogicalKeyboardKey.pageUp);
+    await tester.pumpAndSettle();
+    expect(controller.currentLineIndex, 3);
+    controller.setMultiLineVisibleLines(1);
+    await tester.pumpAndSettle();
+    expect(controller.settings.oneLineMode, isTrue);
+    expect(tester.widget<Text>(find.byType(Text).first).data, 'LINE-4');
+    await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.byType(Text).first).data, 'LINE-5');
+    controller.setMultiLineVisibleLines(2);
+    await tester.pumpAndSettle();
+    expect(controller.settings.oneLineMode, isFalse);
+    expect(tester.widget<Text>(find.byType(Text).first).data, 'LINE-5\nLINE-6');
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  for (final pageLines in [1, 2, 5]) {
+    testWidgets('page keys and wheel advance $pageLines lines', (tester) async {
       final controller = ReaderController(
         initialContent: List.generate(
-          20,
-          (index) => 'LINE-${index + 1}',
+          12,
+          (index) => 'ROW-${index + 1}',
         ).join('\n'),
         preferencesStore: MemoryReaderPreferencesStore(
-          initialSettings: ReaderSettings.defaults.copyWith(oneLineMode: true),
+          initialSettings: ReaderSettings.defaults.copyWith(
+            multiLineVisibleLines: pageLines,
+            oneLineMode: pageLines == 1,
+          ),
         ),
         windowController: _FakePlatformWindowController(),
         fileBookmarkService: _FakeReaderFileBookmarkService(),
@@ -46,47 +110,82 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      controller.setMultiLineVisibleLines(3);
-      await tester.pumpAndSettle();
-      expect(
-        tester.widget<Text>(find.byType(Text).first).data,
-        'LINE-1\nLINE-2\nLINE-3',
-      );
+      String text() => tester.widget<Text>(find.byType(Text).first).data!;
+      final firstPage = text();
       await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
       await tester.pumpAndSettle();
-      expect(
-        tester.widget<Text>(find.byType(Text).first).data,
-        'LINE-3\nLINE-4\nLINE-5',
-      );
-      controller.setMultiLineVisibleLines(7);
-      await tester.pumpAndSettle();
-      expect(
-        tester.widget<Text>(find.byType(Text).first).data,
-        'LINE-3\nLINE-4\nLINE-5\nLINE-6\nLINE-7\nLINE-8\nLINE-9',
-      );
-      await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
-      await tester.pumpAndSettle();
-      expect(controller.currentLineIndex, 8);
+      expect(controller.currentLineIndex, pageLines);
+      expect(text().split('\n').first, 'ROW-${pageLines + 1}');
       await tester.sendKeyEvent(LogicalKeyboardKey.pageUp);
       await tester.pumpAndSettle();
-      expect(controller.currentLineIndex, 2);
-      controller.setMultiLineVisibleLines(1);
+      expect(text(), firstPage);
+      for (final delta in [56.0, -56.0, 112.0, -112.0]) {
+        await tester.sendEventToBinding(
+          PointerScrollEvent(
+            position: const Offset(400, 300),
+            scrollDelta: Offset(0, delta),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(controller.currentLineIndex, delta > 0 ? pageLines : 0);
+      }
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.pumpAndSettle();
-      expect(controller.settings.oneLineMode, isTrue);
-      expect(tester.widget<Text>(find.byType(Text).first).data, 'LINE-3');
+      expect(controller.currentLineIndex, 1);
+      controller.jumpToLineNumber(12);
+      await tester.pumpAndSettle();
       await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
       await tester.pumpAndSettle();
-      expect(tester.widget<Text>(find.byType(Text).first).data, 'LINE-4');
-      controller.setMultiLineVisibleLines(2);
-      await tester.pumpAndSettle();
-      expect(controller.settings.oneLineMode, isFalse);
-      expect(
-        tester.widget<Text>(find.byType(Text).first).data,
-        'LINE-4\nLINE-5',
-      );
+      expect(controller.currentLineIndex, 11);
       await tester.pumpWidget(const SizedBox.shrink());
-    },
-  );
+    });
+  }
+
+  testWidgets('two-line pages advance wrapped text by two visual lines', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(260, 150);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    final controller = ReaderController(
+      initialContent: List.generate(80, (index) => 'word$index').join(' '),
+      preferencesStore: MemoryReaderPreferencesStore(
+        initialSettings: ReaderSettings.defaults.copyWith(
+          multiLineVisibleLines: 2,
+        ),
+      ),
+      windowController: _FakePlatformWindowController(),
+      fileBookmarkService: _FakeReaderFileBookmarkService(),
+      importService: _FakeReaderImportService(),
+      libraryStorage: MemoryReaderLibraryStorage(),
+    );
+    await controller.initialize();
+    await tester.pumpWidget(
+      CheatReaderApp(
+        controller: controller,
+        windowController: _FakePlatformWindowController(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    String text() => tester.widget<Text>(find.byType(Text).first).data!;
+    final firstPage = text();
+    expect(firstPage.split('\n'), hasLength(2));
+    await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+    await tester.pumpAndSettle();
+    final nextPage = text();
+    expect(nextPage, isNot(firstPage));
+    expect(controller.currentLineIndex, 0);
+    await tester.sendKeyEvent(LogicalKeyboardKey.pageUp);
+    await tester.pumpAndSettle();
+    expect(text(), firstPage);
+    for (var i = 0; i < 2; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pumpAndSettle();
+    }
+    expect(text(), nextPage);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 
   for (final oneLine in [true, false]) {
     testWidgets('wheel steps preserve wrapped paragraphs in mode $oneLine', (
@@ -654,7 +753,7 @@ void main() {
     expect(find.textContaining('第三段'), findsNothing);
   });
 
-  testWidgets('custom page shortcuts keep one visual line of context', (
+  testWidgets('custom page shortcuts advance a full visual page', (
     WidgetTester tester,
   ) async {
     tester.view.devicePixelRatio = 1;
@@ -701,7 +800,7 @@ void main() {
 
     expect(
       tester.widget<Text>(find.byType(Text).first).data,
-      'LINE-5\nLINE-6\nLINE-7\nLINE-8\nLINE-9',
+      'LINE-6\nLINE-7\nLINE-8\nLINE-9\nLINE-10',
     );
 
     await tester.sendKeyEvent(LogicalKeyboardKey.keyP);

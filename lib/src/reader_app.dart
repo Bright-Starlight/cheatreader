@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:math' as math;
 
 import 'package:desktop_drop/desktop_drop.dart';
@@ -466,21 +467,12 @@ class _ReaderSurfaceState extends State<ReaderSurface>
       return;
     }
 
-    final steps = math.max(1, (delta.abs() / 56).round());
     if (delta > 0) {
-      for (var index = 0; index < steps; index += 1) {
-        _advanceReading();
-        await WidgetsBinding.instance.endOfFrame;
-        if (!mounted) return;
-      }
-      return;
+      await _advanceReadingPage();
+    } else {
+      await _rewindReadingPage();
     }
-
-    for (var index = 0; index < steps; index += 1) {
-      _rewindReading();
-      await WidgetsBinding.instance.endOfFrame;
-      if (!mounted) return;
-    }
+    await WidgetsBinding.instance.endOfFrame;
   }
 
   void _advanceReading() {
@@ -608,7 +600,12 @@ class _ReaderSurfaceState extends State<ReaderSurface>
   }
 
   Future<bool> _advanceReadingPage() async {
-    final stepCount = math.max(1, _visibleVisualLineCapacity - 1);
+    final stepCount = math.max(1, _visibleVisualLineCapacity);
+    developer.log(
+      '整页向后翻阅：起始段落=${widget.controller.currentLineIndex}，视觉行数=$stepCount',
+      name: 'ReaderPaging',
+      level: 500,
+    );
     var movedAny = false;
     var animated = false;
     for (var index = 0; index < stepCount; index += 1) {
@@ -688,7 +685,12 @@ class _ReaderSurfaceState extends State<ReaderSurface>
   }
 
   Future<void> _rewindReadingPage() async {
-    final stepCount = math.max(1, _visibleVisualLineCapacity - 1);
+    final stepCount = math.max(1, _visibleVisualLineCapacity);
+    developer.log(
+      '整页向前翻阅：起始段落=${widget.controller.currentLineIndex}，视觉行数=$stepCount',
+      name: 'ReaderPaging',
+      level: 500,
+    );
     var animated = false;
     for (var index = 0; index < stepCount; index += 1) {
       final moved = _rewindReadingInternal(animate: !animated);
