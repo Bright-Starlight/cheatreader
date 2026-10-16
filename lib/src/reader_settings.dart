@@ -53,6 +53,7 @@ extension ReaderAppDisguisePresetDetails on ReaderAppDisguisePreset {
 class ReaderSettings {
   const ReaderSettings({
     required this.oneLineMode,
+    this.multiLineVisibleLines = defaultMultiLineVisibleLines,
     required this.modeToggleTrigger,
     required this.languageMode,
     required this.appDisguisePreset,
@@ -84,6 +85,9 @@ class ReaderSettings {
   static const double minTextBrightnessFactor = 0.35;
   static const double maxTextBrightnessFactor = 1.0;
   static const double defaultTextBrightnessFactor = 1.0;
+  static const int minMultiLineVisibleLines = 1;
+  static const int maxMultiLineVisibleLines = 20;
+  static const int defaultMultiLineVisibleLines = 5;
   static const double minFontScale = 0.5;
   static const double maxFontScale = 1.4;
   static const double minLineSpacing = 1.2;
@@ -128,6 +132,7 @@ class ReaderSettings {
   );
 
   final bool oneLineMode;
+  final int multiLineVisibleLines;
   final ReaderModeToggleTrigger modeToggleTrigger;
   final ReaderLanguageMode languageMode;
   final ReaderAppDisguisePreset appDisguisePreset;
@@ -159,6 +164,7 @@ class ReaderSettings {
 
   ReaderSettings copyWith({
     bool? oneLineMode,
+    int? multiLineVisibleLines,
     ReaderModeToggleTrigger? modeToggleTrigger,
     ReaderLanguageMode? languageMode,
     ReaderAppDisguisePreset? appDisguisePreset,
@@ -188,6 +194,8 @@ class ReaderSettings {
   }) {
     return ReaderSettings(
       oneLineMode: oneLineMode ?? this.oneLineMode,
+      multiLineVisibleLines:
+          multiLineVisibleLines ?? this.multiLineVisibleLines,
       modeToggleTrigger: modeToggleTrigger ?? this.modeToggleTrigger,
       languageMode: languageMode ?? this.languageMode,
       appDisguisePreset: appDisguisePreset ?? this.appDisguisePreset,

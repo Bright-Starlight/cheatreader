@@ -560,6 +560,12 @@ abstract class AppLocalizations {
   /// **'Font size'**
   String get fontScaleLabel;
 
+  /// No description provided for @multiLineVisibleLinesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Lines per page'**
+  String get multiLineVisibleLinesLabel;
+
   /// No description provided for @lineSpacingLabel.
   ///
   /// In en, this message translates to:

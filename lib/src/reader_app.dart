@@ -904,7 +904,13 @@ class _ReaderSurfaceState extends State<ReaderSurface>
             );
             final visibleLineCapacity = settings.oneLineMode
                 ? 1
-                : math.max(1, (availableHeight / estimatedLineHeight).floor());
+                : math.min(
+                    settings.multiLineVisibleLines,
+                    math.max(
+                      1,
+                      (availableHeight / estimatedLineHeight).floor(),
+                    ),
+                  );
             _visibleVisualLineCapacity = visibleLineCapacity;
 
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2295,6 +2301,18 @@ class _ReaderControlPanelState extends State<_ReaderControlPanel> {
         divisions: 18,
         displayValue: l10n.sliderPercent((settings.fontScale * 100).round()),
         onChanged: controller.setFontScale,
+      ),
+      _SliderRow(
+        label: l10n.multiLineVisibleLinesLabel,
+        value: settings.multiLineVisibleLines.toDouble(),
+        min: ReaderSettings.minMultiLineVisibleLines.toDouble(),
+        max: ReaderSettings.maxMultiLineVisibleLines.toDouble(),
+        divisions:
+            ReaderSettings.maxMultiLineVisibleLines -
+            ReaderSettings.minMultiLineVisibleLines,
+        displayValue: '${settings.multiLineVisibleLines}',
+        onChanged: (value) =>
+            controller.setMultiLineVisibleLines(value.round()),
       ),
       _SliderRow(
         label: l10n.lineSpacingLabel,

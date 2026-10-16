@@ -262,6 +262,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fontScaleLabel => 'Font size';
 
   @override
+  String get multiLineVisibleLinesLabel => 'Lines per page';
+
+  @override
   String get lineSpacingLabel => 'Line spacing';
 
   @override

@@ -1,8 +1,11 @@
 import 'dart:math' as math;
 
+import 'reader_settings.dart';
+
 const double readerBaseFontSize = 20;
 const double readerTextLineHeight = 1.5;
-const int readerDefaultMultiLineVisibleLines = 5;
+const int readerDefaultMultiLineVisibleLines =
+    ReaderSettings.defaultMultiLineVisibleLines;
 const double readerHorizontalPadding = 6;
 const double readerMultiLineVerticalPadding = 0;
 const double readerOneLineVerticalPadding = 6;
@@ -34,10 +37,14 @@ double readerOneLineWindowHeightForFontScale({
 double readerDefaultMultiLineWindowHeightForFontScale(
   double fontScale, {
   double lineSpacing = readerTextLineHeight,
+  int visibleLines = readerDefaultMultiLineVisibleLines,
 }) {
   final targetHeight =
       (readerTextHeightForFontScale(fontScale, lineSpacing: lineSpacing) *
-          readerDefaultMultiLineVisibleLines) +
+          visibleLines.clamp(
+            ReaderSettings.minMultiLineVisibleLines,
+            ReaderSettings.maxMultiLineVisibleLines,
+          )) +
       8;
   return math.max(readerMinimumMultiLineHeight, targetHeight);
 }

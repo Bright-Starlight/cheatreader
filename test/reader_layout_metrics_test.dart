@@ -2,6 +2,26 @@ import 'package:cheatreader/src/reader_layout_metrics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('multi-line height follows configured lines, font and spacing', () {
+    expect(readerDefaultMultiLineWindowHeightForFontScale(1), 158);
+    expect(
+      readerDefaultMultiLineWindowHeightForFontScale(1, visibleLines: 10),
+      308,
+    );
+    expect(
+      readerDefaultMultiLineWindowHeightForFontScale(
+        1.2,
+        lineSpacing: 2,
+        visibleLines: 10,
+      ),
+      488,
+    );
+    expect(
+      readerDefaultMultiLineWindowHeightForFontScale(1, visibleLines: 2),
+      readerMinimumMultiLineHeight,
+    );
+  });
+
   group('readerAutomaticSingleLineWidth', () {
     test('uses a compact automatic width on first entry to one-line mode', () {
       expect(

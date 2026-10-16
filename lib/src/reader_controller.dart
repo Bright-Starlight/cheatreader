@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -330,6 +331,21 @@ class ReaderController extends ChangeNotifier {
     _updateSettings(_settings.copyWith(fontScale: _normalizeFontScale(value)));
   }
 
+  void setMultiLineVisibleLines(int value) {
+    final lines = value.clamp(
+      ReaderSettings.minMultiLineVisibleLines,
+      ReaderSettings.maxMultiLineVisibleLines,
+    );
+    developer.log(
+      '更新多行阅读配置：行数=$lines，原单行模式=${_settings.oneLineMode}',
+      name: 'ReaderController',
+      level: 500,
+    );
+    _updateSettings(
+      _settings.copyWith(multiLineVisibleLines: lines, oneLineMode: lines == 1),
+    );
+  }
+
   void setLineSpacing(double value) {
     _updateSettings(
       _settings.copyWith(
@@ -567,6 +583,7 @@ class ReaderController extends ChangeNotifier {
 
   void _updateSettings(ReaderSettings value) {
     if (_settings.oneLineMode == value.oneLineMode &&
+        _settings.multiLineVisibleLines == value.multiLineVisibleLines &&
         _settings.modeToggleTrigger == value.modeToggleTrigger &&
         _settings.languageMode == value.languageMode &&
         _settings.appDisguisePreset == value.appDisguisePreset &&

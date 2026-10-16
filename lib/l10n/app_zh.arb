@@ -93,6 +93,7 @@
   "fontColorSaturationLabel": "饱和度",
   "fontColorLightnessLabel": "亮度",
   "fontScaleLabel": "字号",
+  "multiLineVisibleLinesLabel": "每页行数",
   "lineSpacingLabel": "行距",
   "readingWidthLabel": "阅读宽度",
   "windowOpacityLabel": "背景透明度",

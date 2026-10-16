@@ -18,6 +18,50 @@ void main() {
 
   group('ReaderController', () {
     test(
+      'configuring page lines enables multi-line and clamps input',
+      () async {
+        final controller = ReaderController(
+          initialContent: 'A\nB\nC',
+          preferencesStore: MemoryReaderPreferencesStore(
+            initialSettings: ReaderSettings.defaults.copyWith(
+              oneLineMode: true,
+            ),
+          ),
+          windowController: FakePlatformWindowController(),
+          fileBookmarkService: FakeReaderFileBookmarkService(),
+          importService: FakeReaderImportService(),
+          libraryStorage: MemoryReaderLibraryStorage(),
+        );
+        await controller.initialize();
+        controller.setMultiLineVisibleLines(10);
+        expect(controller.settings.oneLineMode, isFalse);
+        expect(controller.settings.multiLineVisibleLines, 10);
+        controller.setMultiLineVisibleLines(100);
+        expect(controller.settings.multiLineVisibleLines, 20);
+        controller.setMultiLineVisibleLines(0);
+        expect(controller.settings.multiLineVisibleLines, 1);
+        expect(controller.settings.oneLineMode, isTrue);
+        controller.setMultiLineVisibleLines(2);
+        expect(controller.settings.oneLineMode, isFalse);
+      },
+    );
+
+    test('page line preferences default, persist and clamp', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final store = await SharedPreferencesReaderPreferencesStore.create();
+      expect((await store.loadSnapshot()).settings.multiLineVisibleLines, 5);
+      await store.saveSettings(
+        ReaderSettings.defaults.copyWith(multiLineVisibleLines: 12),
+      );
+      expect((await store.loadSnapshot()).settings.multiLineVisibleLines, 12);
+      final preferences = await SharedPreferences.getInstance();
+      await preferences.setInt('reader.multiLineVisibleLines', 100);
+      expect((await store.loadSnapshot()).settings.multiLineVisibleLines, 20);
+      await preferences.setInt('reader.multiLineVisibleLines', -1);
+      expect((await store.loadSnapshot()).settings.multiLineVisibleLines, 1);
+    });
+
+    test(
       'picker write failure preserves the previous book and position',
       () async {
         final storage = _FailingReaderLibraryStorage();

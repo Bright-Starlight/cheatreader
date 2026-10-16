@@ -20,6 +20,7 @@ class DesktopPlatformWindowController implements PlatformWindowController {
   Offset? _controlPanelRestorePosition;
   Size? _controlPanelRestoreSize;
   bool? _lastOneLineMode;
+  double? _lastMultiLineHeight;
   Size? _rememberedMultiLineSize;
   double? _rememberedOneLineWidth;
   bool _bossKeyHidden = false;
@@ -467,6 +468,11 @@ class DesktopPlatformWindowController implements PlatformWindowController {
       settings: settings,
     );
     final width = math.max(currentSize.width, _minimumWidth);
+    final multiLineHeightChanged = _lastMultiLineHeight != multiLineHeight;
+    _lastMultiLineHeight = multiLineHeight;
+    if (!oneLineMode && (multiLineHeightChanged || _lastOneLineMode == true)) {
+      return Size(width, multiLineHeight);
+    }
     if (_lastOneLineMode == null) {
       return oneLineMode
           ? Size(
@@ -522,6 +528,7 @@ class DesktopPlatformWindowController implements PlatformWindowController {
     return readerDefaultMultiLineWindowHeightForFontScale(
       settings.fontScale,
       lineSpacing: settings.lineSpacing,
+      visibleLines: settings.multiLineVisibleLines,
     );
   }
 

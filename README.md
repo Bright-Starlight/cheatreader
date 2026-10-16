@@ -37,6 +37,7 @@ CheatReader does the opposite: it stays light, quiet, and easy to tuck into the 
 
 - Transparent text-only mode that lets the app disappear into your desktop
 - Compact single-line and multi-line reading modes
+- Settings → Lines per page: 1–20 lines, default 5. Selecting 1 enables single-line mode; 2–20 enables multi-line mode. The choice is saved. Short windows show only the lines that fit; page navigation preserves one line of context.
 - Configurable mode switching via double click, middle click, or keyboard shortcut
 - Adjustable line spacing, reading width, and keyboard controls for longer sessions
 - Direct jump by line, page, percentage, and text search with previous/next match navigation

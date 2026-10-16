@@ -93,6 +93,7 @@
   "fontColorSaturationLabel": "Saturation",
   "fontColorLightnessLabel": "Lightness",
   "fontScaleLabel": "Font size",
+  "multiLineVisibleLinesLabel": "Lines per page",
   "lineSpacingLabel": "Line spacing",
   "readingWidthLabel": "Reading width",
   "windowOpacityLabel": "Background opacity",

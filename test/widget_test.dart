@@ -22,6 +22,72 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets(
+    'configured visual lines control page size and preserve context',
+    (tester) async {
+      final controller = ReaderController(
+        initialContent: List.generate(
+          20,
+          (index) => 'LINE-${index + 1}',
+        ).join('\n'),
+        preferencesStore: MemoryReaderPreferencesStore(
+          initialSettings: ReaderSettings.defaults.copyWith(oneLineMode: true),
+        ),
+        windowController: _FakePlatformWindowController(),
+        fileBookmarkService: _FakeReaderFileBookmarkService(),
+        importService: _FakeReaderImportService(),
+        libraryStorage: MemoryReaderLibraryStorage(),
+      );
+      await controller.initialize();
+      await tester.pumpWidget(
+        CheatReaderApp(
+          controller: controller,
+          windowController: _FakePlatformWindowController(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      controller.setMultiLineVisibleLines(3);
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<Text>(find.byType(Text).first).data,
+        'LINE-1\nLINE-2\nLINE-3',
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<Text>(find.byType(Text).first).data,
+        'LINE-3\nLINE-4\nLINE-5',
+      );
+      controller.setMultiLineVisibleLines(7);
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<Text>(find.byType(Text).first).data,
+        'LINE-3\nLINE-4\nLINE-5\nLINE-6\nLINE-7\nLINE-8\nLINE-9',
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+      await tester.pumpAndSettle();
+      expect(controller.currentLineIndex, 8);
+      await tester.sendKeyEvent(LogicalKeyboardKey.pageUp);
+      await tester.pumpAndSettle();
+      expect(controller.currentLineIndex, 2);
+      controller.setMultiLineVisibleLines(1);
+      await tester.pumpAndSettle();
+      expect(controller.settings.oneLineMode, isTrue);
+      expect(tester.widget<Text>(find.byType(Text).first).data, 'LINE-3');
+      await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+      await tester.pumpAndSettle();
+      expect(tester.widget<Text>(find.byType(Text).first).data, 'LINE-4');
+      controller.setMultiLineVisibleLines(2);
+      await tester.pumpAndSettle();
+      expect(controller.settings.oneLineMode, isFalse);
+      expect(
+        tester.widget<Text>(find.byType(Text).first).data,
+        'LINE-4\nLINE-5',
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
   for (final oneLine in [true, false]) {
     testWidgets('wheel steps preserve wrapped paragraphs in mode $oneLine', (
       tester,

@@ -51,6 +51,7 @@ class SharedPreferencesReaderPreferencesStore extends ReaderPreferencesStore {
   final ReaderBookshelfStorage? _bookshelfStorage;
 
   static const _textSelectionEnabledKey = 'reader.textSelectionEnabled';
+  static const _multiLineVisibleLinesKey = 'reader.multiLineVisibleLines';
   static const _oneLineModeKey = 'reader.oneLineMode';
   static const _modeToggleTriggerKey = 'reader.modeToggleTrigger';
   static const _languageModeKey = 'reader.languageMode';
@@ -97,6 +98,13 @@ class SharedPreferencesReaderPreferencesStore extends ReaderPreferencesStore {
   Future<ReaderPreferencesSnapshot> loadSnapshot() async {
     return ReaderPreferencesSnapshot(
       settings: ReaderSettings(
+        multiLineVisibleLines:
+            (_preferences.getInt(_multiLineVisibleLinesKey) ??
+                    ReaderSettings.defaultMultiLineVisibleLines)
+                .clamp(
+                  ReaderSettings.minMultiLineVisibleLines,
+                  ReaderSettings.maxMultiLineVisibleLines,
+                ),
         textSelectionEnabled:
             _preferences.getBool(_textSelectionEnabledKey) ?? false,
         oneLineMode:
@@ -208,6 +216,13 @@ class SharedPreferencesReaderPreferencesStore extends ReaderPreferencesStore {
   @override
   Future<void> saveSettings(ReaderSettings settings) async {
     await _preferences.setBool(_oneLineModeKey, settings.oneLineMode);
+    await _preferences.setInt(
+      _multiLineVisibleLinesKey,
+      settings.multiLineVisibleLines.clamp(
+        ReaderSettings.minMultiLineVisibleLines,
+        ReaderSettings.maxMultiLineVisibleLines,
+      ),
+    );
     await _preferences.setString(
       _modeToggleTriggerKey,
       settings.modeToggleTrigger.name,

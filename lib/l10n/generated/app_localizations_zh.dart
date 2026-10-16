@@ -248,6 +248,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fontScaleLabel => '字号';
 
   @override
+  String get multiLineVisibleLinesLabel => '每页行数';
+
+  @override
   String get lineSpacingLabel => '行距';
 
   @override
