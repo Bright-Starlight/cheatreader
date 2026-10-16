@@ -77,7 +77,7 @@ jobs:
       matrix:
         include: >-
           ${{ fromJSON(format(
-          inputs.target == 'windows' && '[{{"os":"windows-latest","target":"windows","artifact_name":"cheatreader-windows","build_output":"build/windows/x64/runner/Release","release_asset":"cheatreader-{0}-windows-setup.exe"}}]'
+          (inputs.target == 'windows' || contains(github.ref_name, '-windows.')) && '[{{"os":"windows-latest","target":"windows","artifact_name":"cheatreader-windows","build_output":"build/windows/x64/runner/Release","release_asset":"cheatreader-{0}-windows-setup.exe"}}]'
           || '[{{"os":"macos-latest","target":"macos","artifact_name":"cheatreader-macos","build_output":"build/macos/Build/Products/Release/cheatreader.app","release_asset":"cheatreader-{0}-macos.dmg"}},
           {{"os":"windows-latest","target":"windows","artifact_name":"cheatreader-windows","build_output":"build/windows/x64/runner/Release","release_asset":"cheatreader-{0}-windows-setup.exe"}},
           {{"os":"ubuntu-22.04","target":"linux","arch":"amd64","artifact_name":"cheatreader-linux-amd64","build_output":"build/linux/x64/release/bundle","release_asset":"cheatreader-{0}-linux-amd64.deb"}},
